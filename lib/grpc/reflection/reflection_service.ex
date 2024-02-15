@@ -11,35 +11,34 @@ defmodule GRPC.Reflection.Service do
   alias GRPC.Server
 
   @spec server_reflection_info(ServerReflectionRequest.t(), GRPC.Server.Stream.t()) ::
-          ServerReflectionResponse.t()
+          :ok
   def server_reflection_info(request, stream) do
     Enum.each(request, fn message ->
       Logger.debug("Received reflection request: #{inspect(message)}")
 
-      case message.message_request do
-        {:list_services, _} ->
-          Server.send_reply(stream, Reflection.list_services())
-
-        {:file_containing_symbol, _} ->
-          symbol = elem(message.message_request, 1)
-          Server.send_reply(stream, Reflection.find_by_symbol(symbol))
-
-        {:file_by_filename, _} ->
-          filename = elem(message.message_request, 1)
-          Server.send_reply(stream, Reflection.find_by_filename(filename))
-
-        _ ->
-          Logger.warn("This Reflection Operation is not supported")
-
-          response =
-            ServerReflectionResponse.new(
-              message_response:
-                {:error_response,
-                 ErrorResponse.new(error_code: 13, error_message: "Operation not supported")}
-            )
-
-          Server.send_reply(stream, response)
-      end
+      send_reflection(stream, message.message_request)
     end)
+  end
+
+  def send_reflection(stream, {:list_services, _}),
+    do: Server.send_reply(stream, Reflection.list_services())
+
+  def send_reflection(stream, {:file_containing_symbol, symbol}),
+    do: Server.send_reply(stream, Reflection.find_by_symbol(symbol))
+
+  def send_reflection(stream, {:file_by_filename, filename}),
+    do: Server.send_reply(stream, Reflection.find_by_filename(filename))
+
+  def send_reflection(stream, _) do
+    Logger.warn("This Reflection Operation is not supported")
+
+    response =
+      ServerReflectionResponse.new(
+        message_response:
+          {:error_response,
+           ErrorResponse.new(error_code: 13, error_message: "Operation not supported")}
+      )
+
+    Server.send_reply(stream, response)
   end
 end
