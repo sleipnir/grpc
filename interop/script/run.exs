@@ -16,7 +16,7 @@ alias GRPC.Client.Adapters.Gun
 alias GRPC.Client.Adapters.Mint
 alias Interop.Client
 
-{:ok, _pid, port} = GRPC.Server.start_endpoint(Interop.Endpoint, port)
+{:ok, _pid, port} = GRPC.Server.start_endpoint(Interop.Endpoint, port, [adapter: GRPC.Server.Adapters.Cowboy])
 
 defmodule InteropTestRunner do
   def run(_cli, adapter, port, rounds) do

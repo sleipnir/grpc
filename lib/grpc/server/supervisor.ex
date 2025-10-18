@@ -62,7 +62,14 @@ defmodule GRPC.Server.Supervisor do
     end
 
     opts =
-      case Keyword.validate(opts, [:endpoint, :servers, :start_server, :port, :adapter_opts]) do
+      case Keyword.validate(opts, [
+             :endpoint,
+             :servers,
+             :start_server,
+             :port,
+             :adapter,
+             :adapter_opts
+           ]) do
         {:ok, _opts} ->
           opts
 

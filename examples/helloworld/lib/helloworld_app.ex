@@ -3,7 +3,14 @@ defmodule HelloworldApp do
 
   def start(_type, _args) do
     children = [
-      {GRPC.Server.Supervisor, endpoint: Helloworld.Endpoint, port: 50051, start_server: true}
+      {
+        GRPC.Server.Supervisor,
+        adapter: GRPC.Server.Adapters.Bandit,
+        adapter_opts: [port: 50051],
+        endpoint: Helloworld.Endpoint,
+        port: 50051,
+        start_server: true
+      }
     ]
 
     opts = [strategy: :one_for_one, name: HelloworldApp]

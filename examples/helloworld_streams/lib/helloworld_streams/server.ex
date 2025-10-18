@@ -12,12 +12,23 @@ defmodule HelloworldStreams.Server do
 
   @spec say_unary_hello(HelloRequest.t(), GRPC.Server.Stream.t()) :: any()
   def say_unary_hello(request, _materializer) do
+    error_handler = fn
+      {:error, %GRPC.RPCError{message: reason} = error} ->
+        %GRPC.RPCError{message: "[Error] #{inspect(reason)}"}
+
+      {:error, ArgumentError = error} ->
+        %GRPC.RPCError{message: "[Error] Argument exception: #{inspect(error)}"}
+
+      _ ->
+        %GRPC.RPCError{message: "[Error] Unknown error occurred"}
+    end
+
     GRPCStream.unary(request)
     |> GRPCStream.ask(Transformer)
     |> GRPCStream.map(fn %HelloReply{} = reply ->
       %HelloReply{message: "[Reply] #{reply.message}"}
     end)
-    |> GRPCStream.run()
+    |> GRPCStream.run(:on_failure, error_handler, errors_to_telemetry: true)
   end
 
   @spec say_server_hello(HelloRequest.t(), GRPC.Server.Stream.t()) :: any()

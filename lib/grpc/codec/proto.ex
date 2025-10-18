@@ -6,7 +6,7 @@ defmodule GRPC.Codec.Proto do
   end
 
   def encode(struct) do
-    Protobuf.Encoder.encode_to_iodata(struct)
+    Protobuf.Encoder.encode_to_iodata(struct) |> IO.inspect(label: "Encoded data")
   end
 
   def decode(binary, module) do
